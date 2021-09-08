@@ -1,4 +1,4 @@
-import { Fade, makeStyles } from '@material-ui/core';
+import { Fade, makeStyles, Switch, FormGroup, FormControlLabel, Paper } from '@material-ui/core';
 import Debug from 'debug';
 import React from 'react';
 import {
@@ -21,7 +21,8 @@ import * as RmfModels from 'rmf-models';
 import { buildHotKeys } from '../../hotkeys';
 import { NegotiationTrajectoryResponse } from '../../managers/negotiation-status-manager';
 import { DispenserResource } from '../../managers/resource-manager-dispensers';
-import { AppControllerContext, ResourcesContext } from '../app-contexts';
+import { AppControllerContext, ResourcesContext, SettingsContext } from '../app-contexts';
+import { saveSettings, Settings } from '../../settings';
 import {
   BuildingMapContext,
   DispenserStateContext,
@@ -91,6 +92,22 @@ const useStyles = makeStyles((theme) => ({
       borderTopRightRadius: borderRadius,
       boxShadow: theme.shadows[12],
     },
+  },
+  formGroup: {
+    position: 'absolute',
+    zIndex: 1000,
+    top: 190,
+    left: 10,
+  },
+  formLabelRoot: {
+    alignItems: 'flex-start',
+    padding: 0,
+  },
+  switch: {
+    right: 6,
+  },
+  label: {
+    color: theme.palette.error.main,
   },
 }));
 
@@ -235,7 +252,9 @@ export default function Dashboard(_props: {}): React.ReactElement {
   const statusUpdateTS = React.useRef<number>();
   statusUpdateTS.current = negotiationStatusManager?.getLastUpdateTS() || -1;
 
-  const { doorsApi, liftsApi } = React.useContext(RmfIngressContext) || {};
+  const { doorsApi, liftsApi, fireAlarmApi } = React.useContext(RmfIngressContext) || {};
+  const settings = React.useContext(SettingsContext);
+  const [alarmToggle, setAlarmToggle] = React.useState(settings.alarm);
 
   const handleOnDoorControlClick = React.useCallback(
     (_ev, door: RmfModels.Door, mode: number) =>
@@ -261,6 +280,17 @@ export default function Dashboard(_props: {}): React.ReactElement {
         lift.name,
       ),
     [liftsApi],
+  );
+
+  const handleFireAlarm = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      fireAlarmApi?.postFireAlarmRequestFireAlarmRequestPost(event.target.checked);
+      const newSettings: Settings = { ...settings, alarm: event.target.checked };
+      saveSettings(newSettings);
+      setAlarmToggle(event.target.checked);
+      appController.setSettings(newSettings);
+    },
+    [fireAlarmApi, settings, appController],
   );
 
   function clearSpotlights() {
@@ -396,6 +426,21 @@ export default function Dashboard(_props: {}): React.ReactElement {
           </OmniPanelView>
         </OmniPanel>
       </Fade>
+      <Paper className={classes.formGroup} elevation={4}>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch className={classes.switch} checked={alarmToggle} onChange={handleFireAlarm} />
+            }
+            label="Fire Alarm"
+            labelPlacement="top"
+            classes={{
+              root: classes.formLabelRoot,
+              labelPlacementTop: classes.label,
+            }}
+          />
+        </FormGroup>
+      </Paper>
     </GlobalHotKeys>
   );
 }
