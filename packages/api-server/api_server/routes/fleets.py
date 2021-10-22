@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 
 from fastapi import Depends, Query
@@ -6,9 +7,19 @@ from rx import operators as rxops
 from api_server.base_app import BaseApp
 from api_server.dependencies import pagination_query
 from api_server.fast_io import FastIORouter, WatchRequest
-from api_server.models import Fleet, FleetState, Pagination, Robot, RobotHealth, Task
+from api_server.models import (
+    CancelTask,
+    Fleet,
+    FleetState,
+    Pagination,
+    RemoveRobot,
+    Robot,
+    RobotHealth,
+    Task,
+)
 from api_server.repositories import RmfRepository
 
+from .tasks.dispatcher import DispatcherClient
 from .tasks.utils import get_task_progress
 from .utils import rx_watcher
 
@@ -17,6 +28,13 @@ class FleetsRouter(FastIORouter):
     def __init__(self, app: BaseApp):
         super().__init__(tags=["Fleets"])
         logger = app.logger
+        _dispatcher_client: Optional[DispatcherClient] = None
+
+        def dispatcher_client_dep():
+            nonlocal _dispatcher_client
+            if _dispatcher_client is None:
+                _dispatcher_client = DispatcherClient(app.rmf_gateway())
+            return _dispatcher_client
 
         @self.get("", response_model=List[Fleet])
         async def get_fleets(
@@ -127,3 +145,34 @@ class FleetsRouter(FastIORouter):
                     rxops.map(lambda x: x.dict()),
                 ),
             )
+
+        @self.get("/remove_robot", response_model=Robot)
+        async def remove_robot(
+            robot: RemoveRobot,
+            user: User = Depends(user_dep),
+            dispatcher_client: DispatcherClient = Depends(dispatcher_client_dep),
+        ):
+
+            # imaginary function to remove robot
+            rmf_repo.remove_robot(robot)
+
+            filter_states = [
+                "active",
+                "pending",
+                "queued",
+            ]
+            # get call tasks associated with the robot removed
+            tasks = await rmf_repo.query_task_summaries(
+                tasks_pagination,
+                fleet_name=robot.fleet_name,
+                robot_name=robot.robot_name,
+                state=",".join(filter_states),
+            )
+            await asyncio.wait(
+                [
+                    dispatcher_client.cancel_task_request({task_id: t.task_id}, user)
+                    for t in tasks
+                ]
+            )
+            await dispatcher_client.cancel_task_request(task, user)
+            return

@@ -42,3 +42,12 @@ class Robot(BaseModel):
     name: str
     state: RobotState
     tasks: List[Task] = []
+
+
+# test class
+
+
+class RemoveRobot(BaseModel):
+    fleet_name: str
+    robot_name: str
+    requester: str
