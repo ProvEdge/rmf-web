@@ -50,4 +50,3 @@ class Robot(BaseModel):
 class RemoveRobot(BaseModel):
     fleet_name: str
     robot_name: str
-    requester: str

@@ -2,6 +2,7 @@ import asyncio
 from typing import List, Optional
 
 from fastapi import Depends, Query
+from fastapi.responses import JSONResponse
 from rx import operators as rxops
 
 from api_server.base_app import BaseApp
@@ -17,6 +18,8 @@ from api_server.models import (
     RobotHealth,
     Task,
 )
+
+# import rmf_fleet_msgs.srv import RemoveRobot as RmfRemoveRobot
 from api_server.repositories import RmfRepository
 
 from .tasks.dispatcher import DispatcherClient
@@ -153,8 +156,15 @@ class FleetsRouter(FastIORouter):
             dispatcher_client: DispatcherClient = Depends(dispatcher_client_dep),
         ):
 
-            # imaginary function to remove robot
-            rmf_repo.remove_robot(robot)
+            # imaginary service to remove robot
+            # req = RmfRemoveRobot.Request()
+            # req.fleet_name = robot.fleet_name
+            # req.robot_name = robot.robot_name
+            # req.user = user
+            # response = await self.rmf_gateway.remove_robot(req)
+            # if not response.success:
+            #   raise HTTPException(500, response.message)
+            # return response.success
 
             filter_states = [
                 "active",
@@ -168,11 +178,13 @@ class FleetsRouter(FastIORouter):
                 robot_name=robot.robot_name,
                 state=",".join(filter_states),
             )
-            await asyncio.wait(
+            # delete all existing active tasks
+            delete_task = await asyncio.wait(
                 [
                     dispatcher_client.cancel_task_request({task_id: t.task_id}, user)
                     for t in tasks
                 ]
             )
-            await dispatcher_client.cancel_task_request(task, user)
-            return
+            # check if all active tasks are deleted
+            deleted = all(delete_task)
+            return JSONResponse(content={"success": deleted})

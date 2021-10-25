@@ -27,6 +27,7 @@ from rmf_lift_msgs.msg import LiftState as RmfLiftState
 from rmf_task_msgs.msg import Tasks as RmfTasks
 from rmf_task_msgs.srv import CancelTask as RmfCancelTask
 from rmf_task_msgs.srv import GetTaskList as RmfGetTaskList
+from rmf_task_msgs.srv import ReviveTask as RmfReviveTask
 from rmf_task_msgs.srv import SubmitTask as RmfSubmitTask
 from rosidl_runtime_py.convert import message_to_ordereddict
 
@@ -41,6 +42,9 @@ from .models import (
 )
 from .repositories import StaticFilesRepository
 from .rmf_io import RmfEvents
+
+# imaginary rmf fleet srv
+# import rmf_fleet_msgs.srv import RemoveRobot as RmfRemoveRobot
 
 
 def process_building_map(
@@ -86,6 +90,9 @@ class RmfGateway(rclpy.node.Node):
         self._submit_task_srv = self.create_client(RmfSubmitTask, "submit_task")
         self.get_tasks_srv = self.create_client(RmfGetTaskList, "get_tasks")
         self._cancel_task_srv = self.create_client(RmfCancelTask, "cancel_task")
+        self._revive_task_srv = self.create_client(RmfReviveTask, "revive_task")
+        # imaginary service created from remove robot srv
+        # self._remove_robot_srv = self.create_client(RmfRemoveRobot, "remove_robot")
 
         self.rmf_events = rmf_events
         self.static_files = static_files
@@ -251,6 +258,10 @@ class RmfGateway(rclpy.node.Node):
         )
         self._lift_req.publish(msg)
 
+    # imaginary function to remove robot
+    # async def remove_robot(self, req_msg: RmfRemoveRobot.Request) -> RmfRemoveRobot.Response:
+    #     return await self.call_service(self._remove_robot_srv, req_msg)
+
     async def submit_task(
         self, req_msg: RmfSubmitTask.Request
     ) -> RmfSubmitTask.Response:
@@ -260,3 +271,8 @@ class RmfGateway(rclpy.node.Node):
         self, req_msg: RmfCancelTask.Request
     ) -> RmfCancelTask.Response:
         return await self.call_service(self._cancel_task_srv, req_msg)
+
+    async def revive_task(
+        self, req_msg: RmfReviveTask.Request
+    ) -> RmfReviveTask.Response:
+        return await self.call_service(self._revive_task_srv, req_msg)

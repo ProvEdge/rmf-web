@@ -11,6 +11,7 @@ from api_server.dependencies import pagination_query
 from api_server.fast_io import FastIORouter, WatchRequest
 from api_server.models import (
     CancelTask,
+    ReviveTask,
     SubmitTask,
     SubmitTaskResponse,
     Task,
@@ -137,3 +138,12 @@ class TasksRouter(FastIORouter):
         ):
             cancel_status = await dispatcher_client.cancel_task_request(task, user)
             return JSONResponse(content={"success": cancel_status})
+
+        @self.post("/revive_task")
+        async def revive_task(
+            task: CancelTask,
+            user: User = Depends(user_dep),
+            dispatcher_client: DispatcherClient = Depends(dispatcher_client_dep),
+        ):
+            revive_status = await dispatcher_client.revive_task_request(task, user)
+            return JSONResponse(content={"success": revive_status})

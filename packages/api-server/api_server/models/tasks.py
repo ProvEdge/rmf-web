@@ -117,3 +117,7 @@ class SubmitTaskResponse(BaseModel):
 
 class CancelTask(BaseModel):
     task_id: str
+
+
+class ReviveTask(BaseModel):
+    task_id: str

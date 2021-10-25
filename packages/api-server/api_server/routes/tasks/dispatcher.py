@@ -1,5 +1,6 @@
 from fastapi.exceptions import HTTPException
 from rmf_task_msgs.srv import CancelTask as RmfCancelTask
+from rmf_task_msgs.srv import ReviveTask as RmfReviveTask
 from rmf_task_msgs.srv import SubmitTask as RmfSubmitTask
 
 import api_server.models as mdl
@@ -58,6 +59,25 @@ class DispatcherClient:
         req.requester = "rmf-server"
         req.task_id = task.task_id
         response = await self.rmf_gateway.cancel_task(req)
+        if not response.success:
+            raise HTTPException(500, response.message)
+        return response.success
+
+    async def revive_task_request(self, task: mdl.ReviveTask, user: mdl.User) -> bool:
+        """
+        Cancel Task - This function will trigger a ros srv call to the
+        dispatcher node, and return a response.
+        Raises "HTTPException" if service call fails.
+        """
+        authz_grp = await DispatcherClient._get_cancel_task_authz_grp(task)
+        authorized = await Enforcer.is_authorized(user, authz_grp, RmfAction.TaskRead)
+        if not authorized:
+            raise HTTPException(403)
+
+        req = RmfReviveTask.Request()
+        req.requester = "rmf-server"
+        req.task_id = task.task_id
+        response = await self.rmf_gateway.revive_task(req)
         if not response.success:
             raise HTTPException(500, response.message)
         return response.success
