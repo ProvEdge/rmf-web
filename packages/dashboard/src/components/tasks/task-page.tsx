@@ -4,20 +4,33 @@ import { styled } from '@mui/material';
 import type { Task, TaskSummary } from 'api-client';
 import type { AxiosError } from 'axios';
 import React from 'react';
+import { AppBarTab, HeaderBar, HeaderBarProps, NavigationBar } from 'react-components';
+import TabPanel from '@mui/lab/TabPanel';
+import TabContext from '@mui/lab/TabContext';
 import { PlacesContext, RmfIngressContext } from '../rmf-app';
 import { TaskPanel, TaskPanelProps } from './task-panel';
+import { CreateATask } from './create-a-task';
 
 const classes = {
   taskPanel: 'task-page-taskpanel',
+  taskBar: 'task-bar',
 };
 const StyledTaskPage = styled((props: TaskPanelProps) => <TaskPanel {...props} />)(({ theme }) => ({
   [`&.${classes.taskPanel}`]: {
     padding: `${theme.spacing(4)}`,
     maxWidth: 1600,
-    height: '100%',
+    height: '100vh',
     backgroundColor: theme.palette.background.default,
   },
 }));
+
+const StyledHeaderBar = styled((props: HeaderBarProps) => <HeaderBar {...props} />)(
+  ({ theme }) => ({
+    [`&.${classes.taskBar}`]: {
+      zIndex: theme.zIndex.drawer + 1,
+    },
+  }),
+);
 
 export function TaskPage() {
   const { tasksApi, sioClient } = React.useContext(RmfIngressContext) || {};
@@ -32,6 +45,7 @@ export function TaskPage() {
     () => fetchedTasks.map((t) => ({ ...t, summary: updatedSummaries[t.task_id] || t.summary })),
     [fetchedTasks, updatedSummaries],
   );
+  const [tabValue, setTabValue] = React.useState('Tasks');
 
   const fetchTasks = React.useCallback(
     async (page: number) => {
@@ -113,24 +127,44 @@ export function TaskPage() {
     [tasksApi],
   );
   //extra task panel will be removed
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabValue(newValue);
+  };
+
   return (
-    <StyledTaskPage
-      className={classes.taskPanel}
-      tasks={tasks}
-      paginationOptions={{
-        page,
-        count: hasMore ? -1 : page * 10 + tasks.length,
-        rowsPerPage: 10,
-        rowsPerPageOptions: [10],
-        onPageChange: (_ev, newPage) => setPage(newPage),
-      }}
-      cleaningZones={placeNames}
-      loopWaypoints={placeNames}
-      deliveryWaypoints={placeNames}
-      submitTasks={submitTasks}
-      cancelTask={cancelTask}
-      onRefresh={handleRefresh}
-      onAutoRefresh={setAutoRefreshEnabled}
-    />
+    <React.Fragment>
+      <TabContext value={tabValue}>
+        <StyledHeaderBar className={classes.taskBar}>
+          <NavigationBar value={tabValue} onTabChange={handleTabChange}>
+            <AppBarTab label="Tasks" value="Tasks" aria-label="Tasks" />
+            <AppBarTab label="Create A Task" value="createTask" aria-label="createTask" />
+          </NavigationBar>
+        </StyledHeaderBar>
+        <TabPanel value="Tasks">
+          <StyledTaskPage
+            className={classes.taskPanel}
+            tasks={tasks}
+            paginationOptions={{
+              page,
+              count: hasMore ? -1 : page * 10 + tasks.length,
+              rowsPerPage: 10,
+              rowsPerPageOptions: [10],
+              onPageChange: (_ev, newPage) => setPage(newPage),
+            }}
+            cleaningZones={placeNames}
+            loopWaypoints={placeNames}
+            deliveryWaypoints={placeNames}
+            submitTasks={submitTasks}
+            cancelTask={cancelTask}
+            onRefresh={handleRefresh}
+            onAutoRefresh={setAutoRefreshEnabled}
+          />
+        </TabPanel>
+        <TabPanel value="createTask">
+          <CreateATask />
+        </TabPanel>
+      </TabContext>
+    </React.Fragment>
   );
 }
