@@ -1,7 +1,8 @@
 import React from 'react';
-import { Grid, GridProps, Paper, styled, Typography } from '@mui/material';
+import { Grid, GridProps, styled } from '@mui/material';
 import { TaskBuilder } from './task-builder';
 import { PhaseDetails } from './phase-details';
+import { TaskDetails } from './task-details';
 
 const prefix = 'create-a-task';
 const classes = {
@@ -36,9 +37,7 @@ export function CreateATask() {
         <PhaseDetails />
       </Grid>
       <Grid item xs={7}>
-        <Paper variant="outlined" className={classes.paper}>
-          <Typography variant="h5">Task Details</Typography>
-        </Paper>
+        <TaskDetails />
       </Grid>
     </StyledGrid>
   );
