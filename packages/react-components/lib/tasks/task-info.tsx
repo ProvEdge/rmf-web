@@ -1,4 +1,4 @@
-import { Divider, Typography, useTheme } from '@mui/material';
+import { Button, Divider, Typography, useTheme } from '@mui/material';
 import { styled } from '@mui/material';
 import type { TaskSummary } from 'api-client';
 import React from 'react';
@@ -102,9 +102,11 @@ function DeliveryTaskInfoProps({ task }: DeliveryTaskInfoProps) {
 
 export interface TaskInfoProps {
   task: TaskSummary;
+  showLogs: boolean;
+  onShowLogs?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function TaskInfo({ task }: TaskInfoProps): JSX.Element {
+export function TaskInfo({ task, showLogs, onShowLogs }: TaskInfoProps): JSX.Element {
   const theme = useTheme();
   const taskType = task.task_profile.description.task_type.type;
   const hasConcreteEndTime = [
@@ -158,7 +160,12 @@ export function TaskInfo({ task }: TaskInfoProps): JSX.Element {
         <InfoValue>{taskStateToStr(task.state)}</InfoValue>
       </InfoLine>
       {detailInfo}
-      <Typography variant="h6">Progress</Typography>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Typography variant="h6">Progress</Typography>
+        <Button variant="contained" onClick={() => onShowLogs && onShowLogs(!showLogs)}>
+          {showLogs ? 'CLOSE LOGS' : 'SHOW LOGS'}
+        </Button>
+      </div>
       <TaskTimeline taskSummary={task} />
     </StyledDiv>
   );

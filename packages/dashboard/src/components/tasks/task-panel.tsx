@@ -27,6 +27,7 @@ import { TaskSummary as RmfTaskSummary } from 'rmf-models';
 import { AppControllerContext } from '../app-contexts';
 import { Enforcer } from '../permissions';
 import { parseTasksFile } from './utils';
+import { TaskLogs } from './task-logs';
 
 const prefix = 'task-panel';
 const classes = {
@@ -105,6 +106,7 @@ export function TaskPanel({
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState<AlertProps['severity']>('success');
   const [autoRefresh, setAutoRefresh] = React.useState(true);
+  const [showLogs, setShowLogs] = React.useState(false);
   const profile = React.useContext(UserProfileContext);
   const { showErrorAlert } = React.useContext(AppControllerContext);
 
@@ -212,7 +214,7 @@ export function TaskPanel({
         <Paper className={classes.detailPanelContainer}>
           {selectedTask ? (
             <>
-              <TaskInfo task={selectedTask.summary} />
+              <TaskInfo task={selectedTask.summary} showLogs={showLogs} onShowLogs={setShowLogs} />
               <Button
                 style={{ marginTop: theme.spacing(1) }}
                 fullWidth
@@ -229,6 +231,7 @@ export function TaskPanel({
             <NoSelectedTask />
           )}
         </Paper>
+        {showLogs ? <TaskLogs /> : null}
       </Grid>
       {openCreateTaskForm && (
         <CreateTaskForm

@@ -16,7 +16,6 @@ import { rosTimeToJs } from '../utils';
 import { taskStateToStr } from './utils';
 
 const classes = {
-  table: 'task-table-table-root',
   taskRowHover: 'task-table-taskrow-hover',
   infoRow: 'task-table-info-row',
   phasesCell: 'task-table-phase-cell',
@@ -30,9 +29,6 @@ const classes = {
   taskUnknownCell: 'task-table-unknown-cell',
 };
 const StyledTable = styled((props: TableProps) => <Table {...props} />)(({ theme }) => ({
-  [`&.${classes.table}`]: {
-    minWidth: 650,
-  },
   [`& .${classes.taskRowHover}`]: {
     background: theme.palette.action.hover,
     cursor: 'pointer',
@@ -144,12 +140,7 @@ export interface TaskTableProps {
 
 export function TaskTable({ tasks, onTaskClick }: TaskTableProps): JSX.Element {
   return (
-    <StyledTable
-      className={classes.table}
-      stickyHeader
-      size="small"
-      style={{ tableLayout: 'fixed' }}
-    >
+    <StyledTable stickyHeader size="small">
       <TableHead>
         <TableRow>
           <TableCell>Task Id</TableCell>
