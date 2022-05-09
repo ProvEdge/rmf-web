@@ -1,10 +1,7 @@
 # pylint: disable=line-too-long
 config = {
     "host": "127.0.0.1",  # ip or hostname to bind the socket to
-    # ports used are:
-    # base_port: public REST and socketio endpoints
-    # base_port + 1: internal websocket endpoint for communication with rmf
-    "base_port": 8000,
+    "port": 8000,
     "db_url": "sqlite://:memory:",
     # url that rmf-server is being served on.
     # When being a proxy, this must be the url that rmf-server is mounted on.
@@ -23,7 +20,7 @@ config = {
     "oidc_url": None,
     # Audience the access token is meant for. Can also be an array.
     # Used to verify the "aud" claim.
-    "aud": "localhost",
+    "aud": "rmf_api_server",
     # url or string that identifies the entity that issued the jwt token
     # Used to verify the "iss" claim
     # If iss is set to None, it means that authentication should be disabled
