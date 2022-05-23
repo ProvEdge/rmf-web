@@ -44,7 +44,7 @@ async def on_sio_connect(sid: str, _environ: dict, auth: Optional[dict] = None):
         return False
 
 
-app = FastIO(title="RMF API Server", socketio_connect=on_sio_connect)
+app = FastIO(title="RMF API Server", socketio_connect=on_sio_connect, host=app_config.host, port=app_config.port)
 
 
 app.add_middleware(
