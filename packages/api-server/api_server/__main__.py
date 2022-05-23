@@ -32,7 +32,7 @@ def debug():
 def main():
     debug_thread = threading.Thread(target=debug)
     debug_thread.start()
-    uvicorn.run(app)
+    uvicorn.run(app, host='0.0.0.0', port=8000)
     exit.set()
     debug_thread.join()
 
