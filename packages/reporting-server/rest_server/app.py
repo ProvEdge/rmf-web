@@ -27,7 +27,7 @@ logger.info("started app")
 
 def get_app(run_config=SystemMode.ALL):
 
-    app = FastAPI()
+    app = FastAPI(root_path="/dev/")
 
     app.add_middleware(
         CORSMiddleware,
