@@ -26,13 +26,13 @@ def debug():
             print(stat)
         print("=============================================")
         # tr.print_diff()
-        exit.wait(10)
+        exit.wait(30)
 
 
 def main():
     debug_thread = threading.Thread(target=debug)
     debug_thread.start()
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
     exit.set()
     debug_thread.join()
 
