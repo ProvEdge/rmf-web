@@ -153,6 +153,7 @@ class FastIO(FastAPI):
         ] = None,
         **kwargs,
     ):
+        self.sub_num = 0
         super().__init__(*args, **kwargs)
         self.sio = socketio.AsyncServer(
             async_mode="asgi", cors_allowed_origins="*", serializer=FastIOPacket
@@ -262,6 +263,12 @@ The message must be of the form:
             return
 
         try:
+            ### TODO(YL): Remove this, for debugging
+            self.sub_num += 1
+            print(
+                f" {self.sub_num} | new sub: {sid} | with data: {sub_data.room}",
+                flush=True,
+            )
             result = self._match_routes(sub_data)
             if result is None:
                 await self.sio.emit(
@@ -302,6 +309,7 @@ The message must be of the form:
     async def _on_unsubscribe(self, sid: str, data: dict):
         try:
             sub_data = self._parse_sub_data(data)
+            self.sub_num -= 1
             async with self.sio.session(sid) as session:
                 session: Dict[Any, Any]
                 sub = session["_subscriptions"].get(sub_data.room)
