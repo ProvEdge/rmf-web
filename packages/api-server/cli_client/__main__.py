@@ -8,8 +8,8 @@ def main():
     parser = argparse.ArgumentParser(description="echo events from the rmf api server")
     parser.add_argument(
         "--url",
-        default="http://localhost:8000",
-        help="defaults to http://localhost:8000",
+        default="http://157.90.235.4:31080",
+        help="defaults to http://157.90.235.4:31080",
     )
     parser.add_argument("topic", nargs=1, help="topic to listen on")
     args = parser.parse_args()
